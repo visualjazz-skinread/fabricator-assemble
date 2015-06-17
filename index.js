@@ -315,17 +315,23 @@ var parseMaterials = function () {
 		// trim whitespace from material content
 		var content = fileMatter.content.replace(/^(\s*(\r?\n|\r))+|(\s*(\r?\n|\r))+$/g, '');
 
+		// get a material ID to register the partial with if declared
+		var materialId = fileMatter.data.materialId && fileMatter.data.materialId.length;
+		var partialId = '' + (materialId) ? fileMatter.data.materialId : id;
+		var name = (materialId) ? partialId + ' - ' + toTitleCase(id) : toTitleCase(id);
+
 
 		// capture meta data for the material
 		if (!isSubCollection) {
 			assembly.materials[collection].items[key] = {
-				name: toTitleCase(id),
+				name: name,
 				notes: (fileMatter.data.notes) ? md.render(fileMatter.data.notes) : '',
 				data: localData
 			};
 		} else {
+			name = (materialId) ? partialId + ' - ' + toTitleCase(id.split('.')[1]) : toTitleCase(id.split('.')[1]);
 			assembly.materials[parent].items[collection].items[key] = {
-				name: toTitleCase(id.split('.')[1]),
+				name: name,
 				notes: (fileMatter.data.notes) ? md.render(fileMatter.data.notes) : '',
 				data: localData
 			};
@@ -351,6 +357,11 @@ var parseMaterials = function () {
 
 		// register the partial
 		Handlebars.registerPartial(id, content);
+
+		// register the partial with partial ID if present
+		if (materialId) {
+			Handlebars.registerPartial(partialId, content);
+		}
 
 	});
 
